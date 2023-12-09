@@ -3,22 +3,17 @@ import 'dart:io';
 void solveFirstPart(File file) {
   final lines = file.readAsLinesSync();
   int calibrationValue = 0;
-  for (String line in lines) {
-    for (int i = 0; i < line.length; i++) {
-      final firstDigit = int.tryParse(line[i]);
-      if (firstDigit != null) {
-        calibrationValue += firstDigit * 10;
-        break;
-      }
-    }
+  final String pattern = '\\d';
+  RegExp regExp = RegExp(pattern);
 
-    for (int i = line.length - 1; i >= 0; i--) {
-      final lastDigit = int.tryParse(line[i]);
-      if (lastDigit != null) {
-        calibrationValue += lastDigit;
-        break;
-      }
-    }
+  for (String line in lines) {
+    final matches = regExp.allMatches(line).toList();
+
+    final firstDigit = int.parse(matches[0][0]!);
+    calibrationValue += firstDigit * 10;
+
+    final lastDigit = int.parse(matches[matches.length - 1][0]!);
+    calibrationValue += lastDigit;
   }
   print(calibrationValue);
 }
