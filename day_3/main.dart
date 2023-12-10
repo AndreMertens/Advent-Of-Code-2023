@@ -77,165 +77,87 @@ String? getLastNumberOfStringIfPossible(String string) {
 void solveSecondPart(File file) {
   final lines = file.readAsLinesSync();
   int gearRatioSum = 0;
-  String pattern1 = '\\d+';
-  RegExp regExp1 = RegExp(pattern1);
+  String pattern = '\\*';
+  RegExp regExp1 = RegExp(pattern);
 
   for (int lineIndex = 0; lineIndex < lines.length; lineIndex++) {
     final line = lines[lineIndex];
     final matches = regExp1.allMatches(line).toList();
 
     for (RegExpMatch match in matches) {
+      int? firstNumber;
       int? secondNumber;
 
-      for (int numberIndex = match.start - 1;
-          numberIndex <= match.end;
-          numberIndex++) {
-        if (numberIndex < 0) {
+      for (int i = -1; i <= 1; i++) {
+        if (lineIndex + i < 0) {
           continue;
         }
-        if (numberIndex >= line.length) {
-          continue;
-        }
-
-        if (numberIndex == match.start - 1) {
-          final String characterSameLine = line[numberIndex];
-          if (characterSameLine == '*') {
-            if (lineIndex + 1 < lines.length) {
-              final belowFromStar = getLastNumberOfStringIfPossible(
-                  lines[lineIndex + 1].substring(0, numberIndex + 1));
-
-              if (belowFromStar != null) {
-                secondNumber = int.parse(belowFromStar);
-                break;
-              }
-
-              final belowLeftFromStar = getLastNumberOfStringIfPossible(
-                  lines[lineIndex + 1].substring(0, numberIndex));
-
-              if (belowLeftFromStar != null) {
-                secondNumber = int.parse(belowLeftFromStar);
-                break;
-              }
-            }
-          }
-        }
-
-        if (numberIndex == match.end) {
-          if (lineIndex - 1 >= 0) {
-            final String characterUpperLine = lines[lineIndex - 1][numberIndex];
-            if (characterUpperLine == '*') {
-              if (numberIndex + 1 < line.length) {
-                final rightLowerFromStar = getFirstNumberOfStringIfPossible(
-                    line.substring(numberIndex + 1));
-                if (rightLowerFromStar != null) {
-                  secondNumber = int.parse(rightLowerFromStar);
-                  break;
-                }
-              }
-            }
-          }
-
-          final String characterSameLine = line[numberIndex];
-          if (characterSameLine == '*') {
-            if (numberIndex + 1 < line.length) {
-              final rightFromStar = getFirstNumberOfStringIfPossible(
-                  line.substring(numberIndex + 1));
-              if (rightFromStar != null) {
-                secondNumber = int.parse(rightFromStar);
-                break;
-              }
-            }
-
-            if (lineIndex + 1 < lines.length) {
-              final belowFromStar = getFirstNumberOfStringIfPossible(
-                  lines[lineIndex + 1].substring(numberIndex));
-
-              if (belowFromStar != null) {
-                secondNumber = int.parse(belowFromStar);
-                break;
-              }
-
-              if (numberIndex + 1 < line.length) {
-                final belowRightFromStar = getFirstNumberOfStringIfPossible(
-                    lines[lineIndex + 1].substring(numberIndex + 1));
-
-                if (belowRightFromStar != null) {
-                  secondNumber = int.parse(belowRightFromStar);
-                  break;
-                }
-              }
-            }
-          }
-        }
-
-        if (lineIndex + 1 >= lines.length) {
+        if (lineIndex + i >= lines.length) {
           continue;
         }
 
-        final String characterLowerLine = lines[lineIndex + 1][numberIndex];
-
-        if (characterLowerLine == '*') {
-          if (numberIndex == match.end && numberIndex + 1 < line.length) {
-            final upperRightFromStar = getFirstNumberOfStringIfPossible(
-                line.substring(numberIndex + 1));
-            if (upperRightFromStar != null) {
-              secondNumber = int.parse(upperRightFromStar);
-              break;
-            }
-          }
-
-          final leftFromStar = getLastNumberOfStringIfPossible(
-              lines[lineIndex + 1].substring(0, numberIndex));
-          if (leftFromStar != null) {
-            secondNumber = int.parse(leftFromStar);
+        if (i == 0) {
+          final String? leftOfStar = getLastNumberOfStringIfPossible(
+              lines[lineIndex + i].substring(0, match.start));
+          if (leftOfStar != null && firstNumber == null) {
+            firstNumber = int.parse(leftOfStar);
+          } else if (leftOfStar != null && secondNumber == null) {
+            secondNumber = int.parse(leftOfStar);
             break;
           }
 
-          if (numberIndex + 1 < line.length) {
-            final rightFromStar = getFirstNumberOfStringIfPossible(
-                lines[lineIndex + 1].substring(numberIndex + 1));
-            if (rightFromStar != null) {
-              secondNumber = int.parse(rightFromStar);
-              break;
-            }
-          }
+          final String? rightOfStar = getFirstNumberOfStringIfPossible(
+              lines[lineIndex + i].substring(match.end));
 
-          if (lineIndex + 2 >= lines.length) {
-            continue;
+          if (rightOfStar != null && firstNumber == null) {
+            firstNumber = int.parse(rightOfStar);
+          } else if (rightOfStar != null && secondNumber == null) {
+            secondNumber = int.parse(rightOfStar);
+            break;
           }
-
-          final belowLeftFromStar = getLastNumberOfStringIfPossible(
-                  lines[lineIndex + 2].substring(0, numberIndex)) ??
+        } else {
+          final String aboveOrBelowLeftOfStar = getLastNumberOfStringIfPossible(
+                  lines[lineIndex + i].substring(0, match.start)) ??
               '';
 
-          final belowFromStar = getFirstNumberOfStringIfPossible(
-                  lines[lineIndex + 2].substring(numberIndex)) ??
+          final String aboveOrBelowStar = getFirstNumberOfStringIfPossible(
+                  lines[lineIndex + i].substring(match.start)) ??
               '';
 
-          final combinedString = belowLeftFromStar + belowFromStar;
+          final combinedString = aboveOrBelowLeftOfStar + aboveOrBelowStar;
 
           if (int.tryParse(combinedString) != null) {
-            secondNumber = int.parse(combinedString);
-            break;
+            int combinedNumber = int.parse(combinedString);
+
+            if (firstNumber == null) {
+              firstNumber = combinedNumber;
+            } else if (secondNumber == null) {
+              secondNumber = combinedNumber;
+              break;
+            }
           }
 
-          if (numberIndex + 1 < line.length) {
-            final belowRightFromStar = getFirstNumberOfStringIfPossible(
-                lines[lineIndex + 2].substring(numberIndex + 1));
-            if (belowRightFromStar != null) {
-              secondNumber = int.parse(belowRightFromStar);
+          if (aboveOrBelowStar == '') {
+            final String? upperOrBelowRightFromStar =
+                getFirstNumberOfStringIfPossible(
+                    lines[lineIndex + i].substring(match.end));
+
+            if (upperOrBelowRightFromStar != null && firstNumber == null) {
+              firstNumber = int.parse(upperOrBelowRightFromStar);
+            } else if (upperOrBelowRightFromStar != null &&
+                secondNumber == null) {
+              secondNumber = int.parse(upperOrBelowRightFromStar);
               break;
             }
           }
         }
       }
-
-      if (secondNumber != null) {
-        final int firstNumber = int.parse(match[0]!);
+      if (firstNumber != null && secondNumber != null) {
         gearRatioSum += firstNumber * secondNumber;
       }
     }
   }
+
   print(gearRatioSum);
 }
 
