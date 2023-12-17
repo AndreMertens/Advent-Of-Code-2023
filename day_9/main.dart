@@ -3,7 +3,7 @@ import 'dart:io';
 void solveFirstPart(File file) {
   final lines = file.readAsLinesSync();
   int historyValueSum = 0;
-  String pattern = '\\d+';
+  String pattern = '-*\\d+';
   RegExp regExp = RegExp(pattern);
 
   for (String line in lines) {
@@ -21,11 +21,8 @@ void solveFirstPart(File file) {
       for (int index = 1; index < history.last.length; index++) {
         diffSequence.add(history.last[index] - history.last[index - 1]);
       }
-      if (diffSequence.isEmpty) {
-        history.add([0]);
-      } else {
-        history.add(diffSequence);
-      }
+
+      history.add(diffSequence);
 
       for (int element in diffSequence) {
         if (element != 0) {
